@@ -71,7 +71,6 @@ interface GigabitEthernet1/0/3
  mab
  dot1x pae authenticator
  dot1x timeout tx-period 5
- spanning-tree portfast
  no shutdown
 !
 interface GigabitEthernet1/0/5
