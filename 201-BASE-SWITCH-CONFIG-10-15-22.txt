@@ -4,9 +4,9 @@ enable secret C1sco12345
 username admin privilege 15 password 0 C1sco12345
 ntp server 198.18.128.1
 ntp server 198.19.10.1 prefer
+vlan 2,3,4,5
 ip routing
 ip route 0.0.0.0 0.0.0.0 198.19.10.100
-!
 router ospf 1
  network 198.19.0.0 0.0.255.255 area 0
 !
@@ -38,57 +38,43 @@ lldp run
 radius server ISE
  address ipv4 198.19.10.29 auth-port 1812 acct-port 1813
  key C1sco12345
-!
 aaa server radius dynamic-author
  client 198.19.10.29 server-key C1sco12345
-!
 aaa authentication dot1x default group radius
 aaa authorization network default group radius 
 aaa accounting dot1x default start-stop group radius
 !
 interface GigabitEthernet1/0/1
  description AP
- switch host
- no shutdown
 !
-interface GigabitEthernet1/0/2
- description IP-PHONE
- switch host
- switchport access vlan 3
+interface range Gig1/0/1 - 3
+ switchport host
  device-tracking attach-policy IPDT_POL
- authentication port-control auto
- mab
- no shutdown
 !
-interface GigabitEthernet1/0/3
- description WIN10-WIRED
- switch host
- switchport access vlan 4
- device-tracking attach-policy IPDT_POL
- authentication order dot1x mab
- authentication priority dot1x mab
+interface range Gig1/0/2 - 3
  authentication port-control auto
  mab
  dot1x pae authenticator
  dot1x timeout tx-period 5
- no shutdown
+ authentication order dot1x mab
+ authentication priority dot1x mab
+!
+interface GigabitEthernet1/0/2
+ description IP-PHONE
+ switchport access vlan 3
+interface GigabitEthernet1/0/3
+ description WIN10-WIRED
+ switchport access vlan 4
 !
 interface GigabitEthernet1/0/5
  description WLC
  switchport mode trunk
  switchport nonegotiate
  spanning-tree portfast trunk
- no shutdown
-!
-interface GigabitEthernet1/0/6
 !
 interface GigabitEthernet1/0/7
  description ToR1 on L2-VLAN1
  ip dhcp snooping trust
-!
-interface GigabitEthernet1/0/8
- description UNUSED - ToR2 on VLAN-Primary
- shutdown
 !
 interface Vlan1
  description VLAN-DATACENTER
