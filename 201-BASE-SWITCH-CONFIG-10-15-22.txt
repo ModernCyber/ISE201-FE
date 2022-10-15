@@ -1,81 +1,69 @@
 hostname ise-3650
-!
+ip domain name dcloud.cisco.com
 enable secret C1sco12345
+username admin privilege 15 password 0 C1sco12345
+ntp server 198.18.128.1
+ntp server 198.19.10.1 prefer
+ip routing
+ip route 0.0.0.0 0.0.0.0 198.19.10.100
+!
+router ospf 1
+ network 198.19.0.0 0.0.255.255 area 0
+!
+line vty 0 15
+ exec-timeout 0 0 
+ privilege level 15
+ password C1sco12345
+ transport input telnet ssh
 !
 aaa new-model
-aaa authentication dot1x default group radius
-aaa authorization network default group radius 
-aaa accounting dot1x default start-stop group radius
-!
-aaa server radius dynamic-author
- client 198.19.10.29 server-key C1sco12345
-!
 aaa session-id common
-!
-ip routing
-!
-ip domain name dcloud.cisco.com
-!
-ip dhcp snooping
-!
-device-sensor filter-list dhcp list DHCP-LIST
- option name host-name
- option name requested-address
- option name class-identifier
- option name client-identifier
-!
-device-sensor filter-list cdp list CDP-LIST
- tlv name device-name
- tlv name address-type
- tlv name capabilities-type
- tlv name version-type
- tlv name platform-type
-!
-device-sensor filter-list lldp list LLDP-LIST
- tlv name system-name
- tlv name system-description
- tlv name system-capabilities
-!
-device-sensor filter-spec dhcp include list DHCP-LIST
-device-sensor filter-spec lldp include list LLDP-LIST
-device-sensor filter-spec cdp include list CDP-LIST
-device-sensor accounting
-device-sensor notify all-changes
-!
+radius-server attribute 6 on-for-login-auth
+radius-server attribute 8 include-in-access-req
+radius-server attribute 25 access-request include
+radius-server attribute 31 mac format ietf upper-case
+radius-server attribute 31 send nas-port-detail mac-only
 epm logging
+!
 device-tracking policy IPDT_POL
  no protocol udp
  tracking enable
 !
 dot1x system-auth-control
-!
-spanning-tree mode pvst
-spanning-tree extend system-id
-!
-username admin privilege 15 password 0 C1sco12345
-!
+ip dhcp snooping
+device-sensor accounting
+device-sensor notify all-changes
 lldp run
 !
+radius server ISE
+ address ipv4 198.19.10.29 auth-port 1812 acct-port 1813
+ key C1sco12345
+!
+aaa server radius dynamic-author
+ client 198.19.10.29 server-key C1sco12345
+!
+aaa authentication dot1x default group radius
+aaa authorization network default group radius 
+aaa accounting dot1x default start-stop group radius
+!
 interface GigabitEthernet1/0/1
- description ap
- switchport mode access
- spanning-tree portfast
+ description AP
+ switch host
  no shutdown
 !
 interface GigabitEthernet1/0/2
- description ip-phone
+ description IP-PHONE
+ switch host
  switchport access vlan 3
- switchport mode access
  device-tracking attach-policy IPDT_POL
  authentication port-control auto
  mab
- spanning-tree portfast
  no shutdown
 !
 interface GigabitEthernet1/0/3
  description WIN10-WIRED
+ switch host
  switchport access vlan 4
- switchport mode access
  device-tracking attach-policy IPDT_POL
  authentication order dot1x mab
  authentication priority dot1x mab
@@ -100,9 +88,8 @@ interface GigabitEthernet1/0/7
  ip dhcp snooping trust
 !
 interface GigabitEthernet1/0/8
- description ToR2 on VLAN-Primary
+ description UNUSED - ToR2 on VLAN-Primary
  shutdown
- ip dhcp snooping trust
 !
 interface Vlan1
  description VLAN-DATACENTER
@@ -135,28 +122,5 @@ interface Vlan5
  ip address 198.19.5.1 255.255.255.0
  ip helper-address 198.19.10.1
  no shutdown
-!
-router ospf 1
- network 198.19.0.0 0.0.255.255 area 0
-!
-ip route 0.0.0.0 0.0.0.0 198.19.10.100
-!
-radius-server attribute 6 on-for-login-auth
-radius-server attribute 8 include-in-access-req
-radius-server attribute 25 access-request include
-radius-server attribute 31 mac format ietf upper-case
-radius-server attribute 31 send nas-port-detail mac-only
-!
-radius server ISE
- address ipv4 198.19.10.29 auth-port 1812 acct-port 1813
- key C1sco12345
-!
-line vty 0 15
- privilege level 15
- password C1sco12345
- transport input telnet ssh
-!
-ntp server 198.18.128.1
-ntp server 198.19.10.1 prefer
 !
 end
