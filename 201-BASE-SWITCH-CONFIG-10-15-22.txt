@@ -1,14 +1,11 @@
 hostname ise-3650
 !
-enable secret 5 $1$xPKI$OpjClrK.nSg5QleWXWpC30
+enable secret C1sco12345
 !
 aaa new-model
-!
 aaa authentication dot1x default group radius
 aaa authorization network default group radius 
 aaa accounting dot1x default start-stop group radius
-!
-aaa server radius policy-device
 !
 aaa server radius dynamic-author
  client 198.19.10.29 server-key C1sco12345
@@ -49,7 +46,6 @@ epm logging
 device-tracking policy IPDT_POL
  no protocol udp
  tracking enable
-!
 !
 dot1x system-auth-control
 !
@@ -140,28 +136,10 @@ interface Vlan5
  ip helper-address 198.19.10.1
  no shutdown
 !
-
 router ospf 1
  network 198.19.0.0 0.0.255.255 area 0
 !
 ip route 0.0.0.0 0.0.0.0 198.19.10.100
-ip http server
-ip http secure-server
-ip http client source-interface Vlan1
-ip ssh time-out 60
-!
-!
-ip access-list extended ACL_WEBAUTH_REDIRECT
- deny   udp any any eq domain
- deny   udp any any eq bootps
- deny   ip any host 198.19.10.29
- deny   ip any host 198.19.10.32
- permit ip any any
-!
-ip access-list extended PERMIT
- permit ip any any
-!
-snmp-server community public RO
 !
 radius-server attribute 6 on-for-login-auth
 radius-server attribute 8 include-in-access-req
@@ -173,17 +151,9 @@ radius server ISE
  address ipv4 198.19.10.29 auth-port 1812 acct-port 1813
  key C1sco12345
 !
-line con 0
- exec-timeout 0 0
- stopbits 1
-line aux 0
- stopbits 1
 line vty 0 15
- session-timeout 60 
- exec-timeout 0 0
  privilege level 15
  password C1sco12345
- length 30
  transport input telnet ssh
 !
 ntp server 198.18.128.1
